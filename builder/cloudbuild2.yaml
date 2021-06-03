@@ -38,11 +38,11 @@ steps:
           kubectl get ns production || kubectl create ns production
           kubectl apply --namespace production --recursive -f kubernetes/deployments/prod
           kubectl apply --namespace production --recursive -f kubernetes/services
-substitutions:
-  _IMG_KEEP: "3"
   - id: 'clean gcr'
   - name: 'gcr.io/cloud-builders/gcloud-slim'
     entrypoint: 'bash'
+    env:
+      - '_IMG_KEEP=${_IMG_KEEP}'
     args:
       - '-c'
       - |
