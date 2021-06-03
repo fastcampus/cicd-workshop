@@ -6,7 +6,7 @@ steps:
     args:
       - '-c'
       - |
-          docker build -t gcr.io/$PROJECT_ID/gceme:$TAG_NAME .
+          docker build -t gcr.io/$PROJECT_ID/gceme:$BUILD_ID .
 ### Test
 ### Publish
   - id: 'publish'
@@ -15,7 +15,7 @@ steps:
     args:
       - '-c'
       - |
-          docker push gcr.io/$PROJECT_ID/gceme:$TAG_NAME
+          docker push gcr.io/$PROJECT_ID/gceme:$BUILD_ID
 ### Deploy
   - id: 'deploy'
     name: 'gcr.io/cloud-builders/gcloud'
@@ -33,7 +33,7 @@ steps:
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
             --region "$${ZONE}"
-          sed -i 's|gcr.io/cloud-solutions-images/gceme:.*|gcr.io/$PROJECT_ID/gceme:$TAG_NAME|' ./kubernetes/deployments/prod/*.yaml
+          sed -i 's|gcr.io/cloud-solutions-images/gceme:.*|gcr.io/$PROJECT_ID/gceme:$BUILD_ID|' ./kubernetes/deployments/prod/*.yaml
 
           kubectl get ns production || kubectl create ns production
           kubectl apply --namespace production --recursive -f kubernetes/deployments/prod
