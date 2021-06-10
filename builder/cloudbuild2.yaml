@@ -49,9 +49,10 @@ steps:
       - |
         set -e
 
-        apt update && apt install -y jq
+        apt-get update && apt-get install -y jq
 
-        images="gcr.io/$PROJECT_ID/gceme"
+
+        images="gceme"
         for image in ${images[@]}; do
           echo "Cleaning image ${image}"
           c=0
