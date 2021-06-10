@@ -1,38 +1,41 @@
 steps:
 ### gcr clean test
   - id: 'clean gcr'
-    name: 'gcr.io/cloud-builders/docker'
+    name: 'gcr.io/cloud-builders/gcloud'
     env:
       - '_IMG_KEEP=${_IMG_KEEP}'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
+
         set -e
 
-        apt-get update && apt-get install -y jq
+        apt update && apt install -y jq
 
-        images="gceme"
 
-          c=0
 
-          image="gcr.io/$PROJECT_ID/${image}"
+        image="gcr.io/$PROJECT_ID/gceme"
 
-          number_keep_images=${_IMG_KEEP}
+        number_keep_images=${_IMG_KEEP}
 
-          date=$(gcloud container images list-tags $image --limit=unlimited \
-            --sort-by=~TIMESTAMP --format=json | TZ=/usr/share/zoneinfo/UTC jq -r '.['$number_keep_images'].timestamp.datetime | sub("(?<before>.*):"; .before ) | strptime("%Y-%m-%d %H:%M:%S%z") | mktime | strftime("%Y-%m-%d")')
+        c=0
 
-          for digest in $(gcloud container images list-tags $image --limit=unlimited --sort-by=~TIMESTAMP \
-            --filter="timestamp.datetime < '${date}'" --format='get(digest)'); do
-            (
+        date=$(gcloud container images list-tags $image --limit=unlimited \
+          --sort-by=~TIMESTAMP --format=json | TZ=/usr/share/zoneinfo/UTC jq -r '.['$number_keep_images'].timestamp.datetime | sub("(?<before>.*):"; .before ) | strptime("%Y-%m-%d %H:%M:%S%z") | mktime | strftime("%Y-%m-%d")')
+
+        echo ${date}
+
+        for digest in $(gcloud container images list-tags $image --limit=unlimited --sort-by=~TIMESTAMP \
+          --filter="timestamp.datetime < '${date}'" --format='get(digest)'); do
+           (
               set -x
               gcloud container images delete -q --force-delete-tags "${image}@${digest}"
             )
             c=c+1
-          done
+        done
 
-          echo "Deleted ${c} images for ${image}." >&2
+        echo "Deleted ${c} images for ${image}." >&2
 ### Build
   - id: 'build'
     name: 'gcr.io/cloud-builders/docker'
